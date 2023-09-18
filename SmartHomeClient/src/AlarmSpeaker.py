@@ -16,7 +16,7 @@ class AlarmSpeaker:
     # Sound path.
     __SOUNDS_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../sounds"
     # Alarm timeout seconds
-    __TIMEOUT = 2
+    __TIMEOUT = 2 * 60
 
     def __init__(self):
         """ Init constructor.
