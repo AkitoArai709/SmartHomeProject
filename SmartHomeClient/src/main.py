@@ -9,9 +9,7 @@ def received_handler(client_socket, client_address):
             data = client_socket.recv(1024)
             if not data:
                 break
-            printData = [hex(x) for x in data]
-            # message = data.decode()
-            print(f"Received message from client{client_address}: {printData}")
+            print(f"Received message from client{client_address}: {[hex(x) for x in data]}")
             
             if data[0] == 0x01:
                 ctlCode = data[1]

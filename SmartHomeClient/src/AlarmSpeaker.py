@@ -10,12 +10,13 @@ import random
 import threading
 import simpleaudio
 
-
 class AlarmSpeaker:
     """ AlarmSpeaker. """
 
     # Sound path.
-    __SOUNDS_DIR = "./sounds"
+    __SOUNDS_DIR = os.path.dirname(os.path.abspath(__file__)) + "/../sounds"
+    # Alarm timeout seconds
+    __TIMEOUT = 2
 
     def __init__(self):
         """ Init constructor.
@@ -49,15 +50,24 @@ class AlarmSpeaker:
         """ Continue to sound music until stopped status.
         """
         print("SpeakerThread start")
+        start_time = time.time()
         sound_path = self.__SOUNDS_DIR + "/" + random.choice(os.listdir(self.__SOUNDS_DIR))
 
         while self.__isRunning:
-            # 音声ファイルの読み込み
+            # read sound fime
             sound = simpleaudio.WaveObject.from_wave_file(sound_path)
-            play = sound.play()
             
+            # speaker start
+            play = sound.play()
             while play.is_playing() and self.__isRunning:
                 time.sleep(1)
-                
+            
+            # speaker stop
             play.stop()
+            
+            # determine timeout
+            current_time = time.time()
+            if current_time - start_time >= self.__TIMEOUT:
+                self.__isRunning = False
+                
         print("SpeakerThread stop")
