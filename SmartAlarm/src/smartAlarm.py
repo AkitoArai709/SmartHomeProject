@@ -5,17 +5,19 @@
         This alarm will continue to sound until wake up.
 """
 
+import cv2
 import json
 import time
 import threading
 from alarmSetting import AlarmSetting
-from alarmSpeaker import AlarmSpeaker
+from detectionSleepiness import DetectionSleepiness
+from tcpClient import TCPClient
 from datetime import datetime
 
 class SmartAlarm:
     """ SmartAlram. """
 
-    __SETTINGS_FILE = "./settings/alarmSettings.json"
+    __SETTINGS_FILE = "/home/pi/SmartHomeProject/SmartAlarm/settings/alarmSettings.json"
 
     def __init__(self):
         """ Init constructor.
@@ -23,7 +25,9 @@ class SmartAlarm:
         self.__isRunning = False
         self.__threadObj = None
         self.__alarmSettings = []
-        self.alarmSpeaker = AlarmSpeaker()
+        self.__isRinging = False
+        self.__checkSleepinessThreadObj = None
+        self.__tcpClient = None
 
         self.readJson()
         self.startAlarmThread()
@@ -93,7 +97,7 @@ class SmartAlarm:
         """
         while self.__isRunning:
             if self.__checkAlram():
-                self.alarmSpeaker.goOff()
+                self.__startRingAlarm()
 
             # Sleep until next time.
             time.sleep(60 - datetime.now().second)
@@ -114,3 +118,28 @@ class SmartAlarm:
                    retVal = True
                    alarm.setEnabled(False)
         return retVal
+    
+    def __startRingAlarm(self):
+        print("start ring")
+        self.__isRinging = True
+        if self.__checkSleepinessThreadObj is None:
+            self.__checkSleepinessThreadObj = threading.Thread(target=self.__checkSleepinessThread)
+            self.__checkSleepinessThreadObj.start()
+        
+        self.__tcpClient = TCPClient("192.168.40.60", 4000)
+        self.__tcpClient.connect()
+        self.__tcpClient.send_hex(bytes([0x01, 0x00]))
+        
+    def __checkSleepinessThread(self):
+        """ Check sleepiness form the camera.
+        """
+        infApp = DetectionSleepiness()
+        camera = cv2.VideoCapture("rtsp://192.168.40.60:8080/unicast")
+
+        while self.__isRinging:
+            _, frame = camera.read()
+            if infApp.isSleepy(frame) == False:
+                print("wake up")
+                self.__isRinging = False
+                self.__tcpClient.send_hex(bytes([0x01, 0x01]))
+                self.__tcpClient.close()

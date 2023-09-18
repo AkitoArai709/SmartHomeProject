@@ -16,8 +16,8 @@ class DetectionSleepiness:
 
     def __init__(self):
         # Learning result model file path
-        self.faceCascadePath = "./models/opencv/haarcascade_frontalface_alt2.xml"
-        self.faceLandmarksPath = "./models/dlib/shape_predictor_68_face_landmarks.dat"
+        self.faceCascadePath = "/home/pi/SmartHomeProject/SmartAlarm/models/opencv/haarcascade_frontalface_alt2.xml"
+        self.faceLandmarksPath = "/home/pi/SmartHomeProject/SmartAlarm/models/dlib/shape_predictor_68_face_landmarks.dat"
         
         # Learning model
         self.faceCascade = cv2.CascadeClassifier(self.faceCascadePath)
@@ -74,7 +74,7 @@ class DetectionSleepiness:
         isSleepy = None
         # detect person face
         rect = self.faceCascade.detectMultiScale(frame,
-                    scaleFactor=1.11, minNeighbors=3, minSize=(200, 200))
+                    scaleFactor=1.11, minNeighbors=3, minSize=(100, 100))
         
         if len(rect) > 0:
             # resize to face size
