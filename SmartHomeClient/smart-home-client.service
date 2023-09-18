@@ -1,0 +1,11 @@
+[Unit]
+Description = smart home clinet app
+After=network.target
+
+[Service]
+Type = simple
+ExecStart = python3 ~/SmartHomeProject/SmartHomeClient/src/main.py
+Restart = always
+
+[Install]
+WantedBy = multi-user.target
